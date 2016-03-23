@@ -487,8 +487,21 @@ Ensemble* etats_accessibles( const Automate * automate, int etat ){
   A_FAIRE_RETURN( NULL ); 
 }
 
+/* Pour récupérer les états accessibles depuis les états initiaux, 
+ * en se servant donc de etats_accessibles sur les états initiaux 
+*/
+
 Ensemble* accessibles( const Automate * automate ){
-  A_FAIRE_RETURN( NULL ); 
+ 	Ensemble* ret = copier_ensemble(get_initiaux(automate));
+ 	Ensemble_iterateur it;
+ 	for(
+ 		it = premier_iterateur_ensemble(get_initiaux(automate)); 
+ 		! iterateur_est_vide(it);
+ 		it = iterateur_suivant_ensemble(it)
+ 		){
+ 		ret = creer_union_ensemble(ret,etats_accessibles(automate,get_element(it)));
+ }
+ return ret;
 }
 
 Automate *automate_accessible( const Automate * automate ){
@@ -499,14 +512,32 @@ Automate *automate_accessible( const Automate * automate ){
 *	 et on change toute transition d(q,alpha) = q0 en d'(q0,alpha) = q
 */
 Automate *miroir( const Automate * automate){
-  Automate ret = creer_automate();
-  ret->initiaux = copier_ensemble(get_finaux(automate));
-  ret->finaux = copier_ensemble(get_initiaux(automate));
-  //TODO
+	Automate* ret = creer_automate();
+	ret->initiaux = copier_ensemble(get_finaux(automate));
+	ret->finaux = copier_ensemble(get_initiaux(automate));
+	Table_iterateur it_trans;
+	Ensemble_iterateur it_ens;
+	for(
+		it_trans = premier_iterateur_table(automate->transitions);
+		!iterateur_est_vide(it_trans); 
+		it_trans = iterateur_suivant_table(it_trans)
+		){
+		Cle * cle = (Cle*) get_cle( it_trans );
+		Ensemble * fins = (Ensemble*) get_valeur( it_trans );
+		for(
+			it_ens = premier_iterateur_ensemble( fins );
+			! iterateur_ensemble_est_vide( it_ens );
+			it_ens = iterateur_suivant_ensemble( it_ens )
+			){
+				int fin = get_element( it_ens );
+				ajouter_transition( ret, fin, cle->lettre, cle->origine );
+			}
+		}
+	return ret;
 }
 
 Automate * creer_automate_du_melange(
-				     const Automate* automate_1,  const Automate* automate_2
-				     ){
-  A_FAIRE_RETURN( NULL ); 
+	const Automate* automate_1,  const Automate* automate_2
+	){
+	A_FAIRE_RETURN( NULL ); 
 }
