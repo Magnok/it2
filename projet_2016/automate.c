@@ -495,8 +495,14 @@ Automate *automate_accessible( const Automate * automate ){
   A_FAIRE_RETURN( NULL ); 
 }
 
+/* Pour créer l'automate, on échange états initiaux et finaux
+*	 et on change toute transition d(q,alpha) = q0 en d'(q0,alpha) = q
+*/
 Automate *miroir( const Automate * automate){
-  A_FAIRE_RETURN( NULL ); 
+  Automate ret = creer_automate();
+  ret->initiaux = copier_ensemble(get_finaux(automate));
+  ret->finaux = copier_ensemble(get_initiaux(automate));
+  //TODO
 }
 
 Automate * creer_automate_du_melange(
@@ -504,8 +510,3 @@ Automate * creer_automate_du_melange(
 				     ){
   A_FAIRE_RETURN( NULL ); 
 }
-
-Automate * creer_automate_deterministe( const Automate* automate ){
-  A_FAIRE_RETURN( NULL );
-}
-

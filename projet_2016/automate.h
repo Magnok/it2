@@ -437,12 +437,16 @@ Automate * creer_union_des_automates(
 	const Automate * automate_1, const Automate * automate_2
 );
 
+
 /**
- * @brief @todo Renvoie l'automate déterministe.
+ * @brief @todo Renvoie l'automate miroir d'un automate.
  *
- * @param automate L'automate à déterminiser.
- * @return L'automate déterministe correspondant.
+ * Il s'agit de l'automate qui reconnaît les mots renversés du langage associé
+ * à l'automate passé en paramètre.
+ *
+ * @param automate Un automate.
+ * @return L'automate miroir.
  */ 
-Automate * creer_automate_deterministe( const Automate* automate );
+Automate *miroir( const Automate * automate);
 
 #endif
