@@ -483,9 +483,37 @@ Automate * creer_union_des_automates(
   A_FAIRE_RETURN( NULL );
 }
 
-Ensemble* etats_accessibles( const Automate * automate, int etat ){
-  A_FAIRE_RETURN( NULL ); 
+/* pour chaque etats :
+ * utilise la fonction delta1 appliquée sur chaque lettre de l'alphabet
+ * creation d'un ensemble local (propre à l'état) d'états accessibles
+ * fonction auxiliaire relancé sur tout les états n'ayant pas encore été traité. 
+*/
+Ensemble * aux_etats_accessibles(const Automate * automate, const Ensemble * alphabet, int etat, Ensemble * etatsAcc){
+  Ensemble * etatsAccLocaux = creer_ensemble(NULL,NULL,NULL);
+  Ensemble_iterateur it;
+  for(it = premier_iterateur_ensemble(alphabet);
+      ! iterateur_est_vide(it);
+      iterateur_suivant_ensemble(it)){
+    etatsAccLocaux = creer_union_ensemble(etatsAccLocaux,delta1(automate,etat,get_element(it)));
+  }
+
+  Ensemble * etatsNonTraites = creer_difference_ensemble(etatsAccLocaux,etatsAcc);
+  etatsAcc = creer_union_ensemble(etatsAcc,etatsAccLocaux);
+  for(it = premier_iterateur_ensemble(etatsNonTraites);
+      ! iterateur_est_vide(it);
+      iterateur_suivant_ensemble(it)){
+    etatsAcc = aux_etats_accessibles(automate,alphabet,get_element(it),etatsAcc);
+  }
+  return etatsAcc;
 }
+  
+					  				 
+Ensemble * etats_accessibles( const Automate * automate, int etat ){
+  Ensemble * etatsAcc = creer_ensemble(NULL,NULL,NULL);
+  ajouter_element(etatsAcc,etat);
+  const Ensemble * alphabet = get_alphabet(automate);
+  return aux_etats_accessibles(automate, alphabet, etat, etatsAcc);
+    }
 
 /* Pour récupérer les états accessibles depuis les états initiaux, 
  * en se servant donc de etats_accessibles sur les états initiaux 
@@ -505,7 +533,10 @@ Ensemble* accessibles( const Automate * automate ){
 }
 
 Automate *automate_accessible( const Automate * automate ){
-  A_FAIRE_RETURN( NULL ); 
+  Automate* ret = creer_automate();
+  ret->initiaux = copier_ensemble(get_finaux(automate));
+  ret->finaux = copier_ensemble(get_initiaux(automate));
+  //TODO la suite haha
 }
 
 /* Pour créer l'automate, on échange états initiaux et finaux
