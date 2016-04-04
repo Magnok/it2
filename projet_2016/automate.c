@@ -27,10 +27,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h> 
-
+#include <limits.h>
 #include <assert.h>
-
 #include <math.h>
 
 void action_get_max_etat(const intptr_t element,void* data){
@@ -491,17 +489,17 @@ Automate * creer_union_des_automates(
 Ensemble * aux_etats_accessibles(const Automate * automate, const Ensemble * alphabet, int etat, Ensemble * etatsAcc){
   Ensemble * etatsAccLocaux = creer_ensemble(NULL,NULL,NULL);
   Ensemble_iterateur it;
+  
   for(it = premier_iterateur_ensemble(alphabet);
-      ! iterateur_est_vide(it);
-      iterateur_suivant_ensemble(it)){
+      ! iterateur_ensemble_est_vide(it);
+      it = iterateur_suivant_ensemble(it)){
     etatsAccLocaux = creer_union_ensemble(etatsAccLocaux,delta1(automate,etat,get_element(it)));
   }
-
   Ensemble * etatsNonTraites = creer_difference_ensemble(etatsAccLocaux,etatsAcc);
   etatsAcc = creer_union_ensemble(etatsAcc,etatsAccLocaux);
   for(it = premier_iterateur_ensemble(etatsNonTraites);
-      ! iterateur_est_vide(it);
-      iterateur_suivant_ensemble(it)){
+      ! iterateur_ensemble_est_vide(it);
+      it = iterateur_suivant_ensemble(it)){
     etatsAcc = aux_etats_accessibles(automate,alphabet,get_element(it),etatsAcc);
   }
   return etatsAcc;
@@ -532,11 +530,32 @@ Ensemble* accessibles( const Automate * automate ){
  return ret;
 }
 
+struct suppr_transition{
+  Ensemble * etats_acc;
+  Automate * automate_accessible;
+};
+void action_suppr_transition_si_origine_inaccessible(int origine, char lettre, int fin, void * data){
+  struct suppr_transition * data_struct = (struct suppr_transition *) data;
+  if(est_dans_l_ensemble(data_struct->etats_acc, origine))
+    ajouter_transition(data_struct->automate_accessible, origine, lettre, fin);
+}
+/*
+  Crée un nouvel automate ayant pour états finals uniquement ceux étant accessibles.
+  Copie les transitions de l'automate donnée en paramètre si et seulement si l'état d'origine
+  de la transition est accessible.
+*/
 Automate *automate_accessible( const Automate * automate ){
   Automate* ret = creer_automate();
-  ret->initiaux = copier_ensemble(get_finaux(automate));
-  ret->finaux = copier_ensemble(get_initiaux(automate));
-  //TODO la suite haha
+  Ensemble * etats_acc = accessibles(automate);
+  ret->initiaux = copier_ensemble(get_initiaux(automate));
+  ret->finaux = creer_intersection_ensemble(get_finaux(automate),etats_acc);
+  struct suppr_transition * data = malloc(sizeof(*data));
+  data->etats_acc = etats_acc;
+  data->automate_accessible = ret;
+  pour_toute_transition(automate, action_suppr_transition_si_origine_inaccessible,(void *) data);
+  liberer_ensemble(etats_acc);
+  free(data);
+  return ret;
 }
 
 /* Pour créer l'automate, on échange états initiaux et finaux
