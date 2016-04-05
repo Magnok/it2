@@ -31,6 +31,11 @@
 #include <assert.h>
 #include <math.h>
 
+/* De manière similaire a get_min_etat, get_max_etat utilise 
+ * pour_tout_element et va stocker le numéro de l'état le 
+ * plus grand dans max qui sera modifié dans  
+ * action_get_max_etat
+ */
 void action_get_max_etat(const intptr_t element,void* data){
   int * max = (int*)data;
   if(*max < element)
@@ -475,12 +480,80 @@ Automate * mot_to_automate( const char * mot ){
   return automate;
 }
 
+/* Pour créer l'union, on fait l'union des alphabets, l'union des états, ainsi que 
+ * les états initaux et les états finaux et l'union des translations des deux
+ * automates
+*/
 Automate * creer_union_des_automates(
 				     const Automate * automate_1, const Automate * automate_2
 				     ){
-  A_FAIRE_RETURN( NULL );
-}
+  Automate* ret = creer_automate();
+  /* On évite le cas où les automates ont des états qui ont le meme numéro */
+  Automate* automate_2bis = translater_automate(automate_2,automate_1);
 
+  Ensemble const* etats_1 = get_etats(automate_1);
+  Ensemble const* etats_2 = get_etats(automate_2bis);
+  Ensemble* etats = creer_union_ensemble(etats_1,etats_2);
+
+  Ensemble const* etats_in_1 = get_initiaux(automate_1);
+  Ensemble const* etats_in_2 = get_initiaux(automate_2bis);
+  Ensemble* etats_in = creer_union_ensemble(etats_in_1,etats_in_2);
+
+  Ensemble const* etats_fin_1 = get_finaux(automate_1);
+  Ensemble const* etats_fin_2 = get_finaux(automate_2bis);
+  Ensemble* etats_fin = creer_union_ensemble(etats_fin_1,etats_fin_2);
+
+  Ensemble const* alphabet_1 = get_alphabet(automate_1);
+  Ensemble const* alphabet_2 = get_alphabet(automate_2bis);
+  Ensemble* alphabet = creer_union_ensemble(alphabet_1,alphabet_2);
+
+  Ensemble_iterateur it1,it2,it3;
+  Ensemble* etats_accessibles;
+  /* On récupère chaque transition de l'automate 1 */
+  for(it1 = premier_iterateur_ensemble(etats_1);
+      ! iterateur_ensemble_est_vide(it1);
+      it1 = iterateur_suivant_ensemble(it1)){
+    for(it2 = premier_iterateur_ensemble(alphabet_1);
+	! iterateur_ensemble_est_vide(it2);
+	it2 = iterateur_suivant_ensemble(it2)){
+      etats_accessibles = delta1(automate_1,get_element(it1),get_element(it2));
+      for(it3 = premier_iterateur_ensemble(etats_accessibles);
+	! iterateur_ensemble_est_vide(it3);
+	it3 = iterateur_suivant_ensemble(it3)){
+	ajouter_transition(ret, get_element(it1), get_element(it2), get_element(it3));
+      }    
+    }    
+  }
+  /* De meme pour l'automate 2 */
+  for(it1 = premier_iterateur_ensemble(etats_2);
+      ! iterateur_ensemble_est_vide(it1);
+      it1 = iterateur_suivant_ensemble(it1))
+    {
+      for(it2 = premier_iterateur_ensemble(alphabet_2);
+	  ! iterateur_ensemble_est_vide(it2);
+	  it2 = iterateur_suivant_ensemble(it2))
+	{
+	  etats_accessibles = delta1(automate_2bis,get_element(it1),get_element(it2));
+	  for(it3 = premier_iterateur_ensemble(etats_accessibles);
+	      ! iterateur_ensemble_est_vide(it3);
+	      it3 = iterateur_suivant_ensemble(it3))
+	    {
+	      ajouter_transition(ret, get_element(it1), get_element(it2), get_element(it3));
+	    }    
+	}    
+    }
+  liberer_automate(automate_2bis);
+  liberer_ensemble(ret->etats);
+  liberer_ensemble(ret->alphabet);
+  liberer_ensemble(ret->initiaux);
+  liberer_ensemble(ret->finaux);
+
+  ret->etats = etats;
+  ret->alphabet = alphabet;
+  ret->initiaux = etats_in;
+  ret->finaux = etats_fin;  
+  return ret;
+}
 /* pour chaque etats :
  * utilise la fonction delta1 appliquée sur chaque lettre de l'alphabet
  * creation d'un ensemble local (propre à l'état) d'états accessibles
