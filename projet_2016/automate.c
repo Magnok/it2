@@ -659,8 +659,90 @@ Automate *miroir( const Automate * automate){
 	return ret;
 }
 
+
+/* Afin de créer l'automate du mélange on crée les états produits 
+   des automates A1 et A2 (i,j) tq i et j appartiennent respectivement à A1 et A2.
+
+   Ensuite, nous ajoutons une transition (p,a,q)
+   (a un mot de l'union des alphabet de A1 et A2, p = (i,j) et q = (i',j'))
+   Si et seulement si il existe une transition (i,a,i') ou (j,a,j')
+
+   Les états initiaux de cet automate sont les couples (i,j) tq i et j initiaux
+   (de même pour les finals). 
+
+   Convention de nommage : l'état (i,j) est représenté par l'entier : (i >> 16) + j  
+*/
+
+int nommer_etat(int i,int j){
+  return (i >> 16) + j;
+}
 Automate * creer_automate_du_melange(
 	const Automate* automate_1,  const Automate* automate_2
 	){
-	A_FAIRE_RETURN( NULL ); 
+  Automate * automate_melange = creer_automate();
+  Ensemble const * etats_1 = get_etats(automate_1);
+  Ensemble const * etats_2 = get_etats(automate_2);
+  Ensemble const * alphabet_1 = get_alphabet(automate_1);
+  Ensemble const * alphabet_2 = get_alphabet(automate_2);
+  Ensemble const * initiaux_1 = get_initiaux(automate_1);
+  Ensemble const * initiaux_2 = get_initiaux(automate_2);
+  Ensemble const * finaux_1 = get_finaux(automate_1);
+  Ensemble const * finaux_2 = get_finaux(automate_2);
+  Ensemble * initiaux_melange, * finaux_melange;
+  initiaux_melange = creer_ensemble(NULL,NULL,NULL);
+  finaux_melange = creer_ensemble(NULL,NULL,NULL);
+  Ensemble * etats_accessibles;
+	
+  Ensemble_iterateur it1, it2, it_alph1, it_alph2, it_access;
+
+  for(
+      it1 = premier_iterateur_ensemble(etats_1);
+      !iterateur_ensemble_est_vide(it1);
+      it1 = iterateur_suivant_ensemble(it1)){
+    for(
+	it2 = premier_iterateur_ensemble(etats_2);
+	!iterateur_ensemble_est_vide(it2);
+	it2 = iterateur_suivant_ensemble(it2)){
+      int i = get_element(it1);
+      int j = get_element(it2);
+      for(
+	  it_alph1 = premier_iterateur_ensemble(alphabet_1);
+	  !iterateur_ensemble_est_vide(it_alph1);
+	  it_alph1 = iterateur_suivant_ensemble(it_alph1)){
+	etats_accessibles = delta1(automate_1, i,get_element(it_alph1));
+	for(
+	    it_access = premier_iterateur_ensemble(etats_accessibles);
+	    !iterateur_ensemble_est_vide(it_access);
+	    it_access = iterateur_suivant_ensemble(it_access)){
+	  ajouter_transition(automate_melange,nommer_etat(i,j), get_element(it_alph1) , nommer_etat(get_element(it_access), j));
+	}				   
+      }
+      for(
+	  it_alph2 = premier_iterateur_ensemble(alphabet_2);
+	  !iterateur_ensemble_est_vide(it_alph2);
+	  it_alph2 = iterateur_suivant_ensemble(it_alph2)){
+	etats_accessibles = delta1(automate_2, i,get_element(it_alph2));
+	for(
+	    it_access = premier_iterateur_ensemble(etats_accessibles);
+	    !iterateur_ensemble_est_vide(it_access);
+	    it_access = iterateur_suivant_ensemble(it_access)){
+	  ajouter_transition(automate_melange,nommer_etat(i,j), get_element(it_alph2) , nommer_etat(get_element(it_access), j));
+	}				   
+      }
+
+      if(est_dans_l_ensemble(initiaux_1,i) && est_dans_l_ensemble(initiaux_2,j))
+	ajouter_element(initiaux_melange, nommer_etat(i,j));
+      if(est_dans_l_ensemble(finaux_1,i) && est_dans_l_ensemble(finaux_2,j))
+	ajouter_element(finaux_melange, nommer_etat(i,j));
+    }
+
+  }
+  automate_melange->initiaux = initiaux_melange;
+  automate_melange->finaux = finaux_melange;
+  return automate_melange;
 }
+
+
+
+
+  
