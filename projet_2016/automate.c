@@ -568,7 +568,9 @@ Ensemble * aux_etats_accessibles(const Automate * automate, const Ensemble * alp
   for(it = premier_iterateur_ensemble(alphabet);
       ! iterateur_ensemble_est_vide(it);
       it = iterateur_suivant_ensemble(it)){
-    ajouter_elements(etatsAccLocaux,delta1(automate,etat,get_element(it)));
+    Ensemble * etats_acc_depuis_lettre = delta1(automate,etat,get_element(it));
+    ajouter_elements(etatsAccLocaux, etats_acc_depuis_lettre);
+    liberer_ensemble(etats_acc_depuis_lettre);
   }
   Ensemble * etatsNonTraites = creer_difference_ensemble(etatsAccLocaux,etatsAcc);
   ajouter_elements(etatsAcc,etatsAccLocaux);
@@ -576,8 +578,9 @@ Ensemble * aux_etats_accessibles(const Automate * automate, const Ensemble * alp
   for(it = premier_iterateur_ensemble(etatsNonTraites);
       ! iterateur_ensemble_est_vide(it);
       it = iterateur_suivant_ensemble(it)){
-    etatsAcc = aux_etats_accessibles(automate,alphabet,get_element(it),etatsAcc);
+    ajouter_elements(etatsAcc, aux_etats_accessibles(automate,alphabet,get_element(it),etatsAcc));
   }
+  liberer_ensemble(etatsNonTraites);
   return etatsAcc;
 }
   
