@@ -521,7 +521,8 @@ Automate * creer_union_des_automates(
 	! iterateur_ensemble_est_vide(it3);
 	it3 = iterateur_suivant_ensemble(it3)){
 	ajouter_transition(ret, get_element(it1), get_element(it2), get_element(it3));
-      }    
+      }
+      liberer_ensemble(etats_accessibles);
     }    
   }
   /* De meme pour l'automate 2 */
@@ -539,7 +540,8 @@ Automate * creer_union_des_automates(
 	      it3 = iterateur_suivant_ensemble(it3))
 	    {
 	      ajouter_transition(ret, get_element(it1), get_element(it2), get_element(it3));
-	    }    
+	    }
+	  liberer_ensemble(etats_accessibles);    
 	}    
     }
   liberer_automate(automate_2bis);
@@ -637,6 +639,8 @@ Automate *automate_accessible( const Automate * automate ){
 */
 Automate *miroir( const Automate * automate){
 	Automate* ret = creer_automate();
+	liberer_ensemble(ret->initiaux);
+	liberer_ensemble(ret->finaux);
 	ret->initiaux = copier_ensemble(get_finaux(automate));
 	ret->finaux = copier_ensemble(get_initiaux(automate));
 	Table_iterateur it_trans;
@@ -716,9 +720,10 @@ Automate * creer_automate_du_melange(
 	    !iterateur_ensemble_est_vide(it_access);
 	    it_access = iterateur_suivant_ensemble(it_access)){
 	  ajouter_transition(automate_melange,nommer_etat(i,j), get_element(it_alph1) , nommer_etat(get_element(it_access), j));
-	}				   
+	}
+	liberer_ensemble(etats_accessibles);				   
       }
-      liberer_ensemble(etats_accessibles);
+      
       for(
 	  it_alph2 = premier_iterateur_ensemble(alphabet_2);
 	  !iterateur_ensemble_est_vide(it_alph2);
@@ -729,9 +734,10 @@ Automate * creer_automate_du_melange(
 	    !iterateur_ensemble_est_vide(it_access);
 	    it_access = iterateur_suivant_ensemble(it_access)){
 	  ajouter_transition(automate_melange,nommer_etat(i,j), get_element(it_alph2), nommer_etat(i, get_element(it_access)));
-	}				   
+	}
+	liberer_ensemble(etats_accessibles);				   
       }
-      liberer_ensemble(etats_accessibles);
+      
       if(est_dans_l_ensemble(initiaux_1,i) && est_dans_l_ensemble(initiaux_2,j))
 	ajouter_element(initiaux_melange, nommer_etat(i,j));
       if(est_dans_l_ensemble(finaux_1,i) && est_dans_l_ensemble(finaux_2,j))
