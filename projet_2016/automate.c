@@ -623,6 +623,8 @@ void action_suppr_transition_si_origine_inaccessible(int origine, char lettre, i
 Automate *automate_accessible( const Automate * automate ){
   Automate* ret = creer_automate();
   Ensemble * etats_acc = accessibles(automate);
+  liberer_ensemble(ret->initiaux);
+  liberer_ensemble(ret->finaux);
   ret->initiaux = copier_ensemble(get_initiaux(automate));
   ret->finaux = creer_intersection_ensemble(get_finaux(automate),etats_acc);
   struct suppr_transition * data = malloc(sizeof(*data));
