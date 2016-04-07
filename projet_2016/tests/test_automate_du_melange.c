@@ -33,29 +33,25 @@ int test_automate_du_melange(){
 	int result = 1;
 
 	{
-		Automate * aut1 = mot_to_automate("a");
-		Automate * aut2 = mot_to_automate("b");
+		Automate * aut1 = mot_to_automate("ab");
+		Automate * aut2 = mot_to_automate("cd");
 
-		Automate * mela = creer_automate_du_melange( aut1, aut2 );
-		
+		Automate * mela = creer_automate_du_melange( aut1, aut2 );		
 		TEST(
 			1
 			&& mela
-			&& le_mot_est_reconnu( mela, "ab" )
-			&& le_mot_est_reconnu( mela, "ba" )
-			&& ! le_mot_est_reconnu( mela, "" )
-			&& ! le_mot_est_reconnu( mela, "a" )
-			&& ! le_mot_est_reconnu( mela, "b" )
-			&& ! le_mot_est_reconnu( mela, "aa" )
-			&& ! le_mot_est_reconnu( mela, "bb" )
-			&& ! le_mot_est_reconnu( mela, "aaa" )
-			&& ! le_mot_est_reconnu( mela, "aab" )
-			&& ! le_mot_est_reconnu( mela, "aba" )
-			&& ! le_mot_est_reconnu( mela, "abb" )
-			&& ! le_mot_est_reconnu( mela, "baa" )
-			&& ! le_mot_est_reconnu( mela, "bab" )
-			&& ! le_mot_est_reconnu( mela, "bba" )
-			&& ! le_mot_est_reconnu( mela, "bbb" )
+			&& le_mot_est_reconnu( mela, "abcd" )
+			&& le_mot_est_reconnu( mela, "acbd" )
+			&& le_mot_est_reconnu( mela, "acdb" )
+			&& ! le_mot_est_reconnu( mela, "adcb" )
+			&& le_mot_est_reconnu( mela, "cdab" )
+			&& le_mot_est_reconnu( mela, "cabd" )
+			&& le_mot_est_reconnu( mela, "cadb" )
+			&& ! le_mot_est_reconnu( mela, "ab" )
+			&& ! le_mot_est_reconnu( mela, "cd" )
+			&& ! le_mot_est_reconnu( mela, "abc" )
+			&& ! le_mot_est_reconnu( mela, "abd" )
+			&& ! le_mot_est_reconnu( mela, "dca" )
 			, result
 		);
 		wrap_liberer_automate( aut1 );

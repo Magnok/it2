@@ -670,11 +670,11 @@ Automate *miroir( const Automate * automate){
    Les états initiaux de cet automate sont les couples (i,j) tq i et j initiaux
    (de même pour les finals). 
 
-   Convention de nommage : l'état (i,j) est représenté par l'entier : (i >> 16) + j  
+   Convention de nommage : l'état (i,j) est représenté par l'entier : (i << 16) + j  
 */
 
 int nommer_etat(int i,int j){
-  return (i >> 16) + j;
+  return (i << 16) + j;
 }
 Automate * creer_automate_du_melange(
 	const Automate* automate_1,  const Automate* automate_2
@@ -717,19 +717,20 @@ Automate * creer_automate_du_melange(
 	  ajouter_transition(automate_melange,nommer_etat(i,j), get_element(it_alph1) , nommer_etat(get_element(it_access), j));
 	}				   
       }
+      liberer_ensemble(etats_accessibles);
       for(
 	  it_alph2 = premier_iterateur_ensemble(alphabet_2);
 	  !iterateur_ensemble_est_vide(it_alph2);
 	  it_alph2 = iterateur_suivant_ensemble(it_alph2)){
-	etats_accessibles = delta1(automate_2, i,get_element(it_alph2));
+	etats_accessibles = delta1(automate_2, j,get_element(it_alph2));
 	for(
 	    it_access = premier_iterateur_ensemble(etats_accessibles);
 	    !iterateur_ensemble_est_vide(it_access);
 	    it_access = iterateur_suivant_ensemble(it_access)){
-	  ajouter_transition(automate_melange,nommer_etat(i,j), get_element(it_alph2) , nommer_etat(get_element(it_access), j));
+	  ajouter_transition(automate_melange,nommer_etat(i,j), get_element(it_alph2), nommer_etat(i, get_element(it_access)));
 	}				   
       }
-
+      liberer_ensemble(etats_accessibles);
       if(est_dans_l_ensemble(initiaux_1,i) && est_dans_l_ensemble(initiaux_2,j))
 	ajouter_element(initiaux_melange, nommer_etat(i,j));
       if(est_dans_l_ensemble(finaux_1,i) && est_dans_l_ensemble(finaux_2,j))
@@ -737,6 +738,8 @@ Automate * creer_automate_du_melange(
     }
 
   }
+  liberer_ensemble(automate_melange->initiaux);
+  liberer_ensemble(automate_melange->finaux);
   automate_melange->initiaux = initiaux_melange;
   automate_melange->finaux = finaux_melange;
   return automate_melange;
