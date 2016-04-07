@@ -566,10 +566,11 @@ Ensemble * aux_etats_accessibles(const Automate * automate, const Ensemble * alp
   for(it = premier_iterateur_ensemble(alphabet);
       ! iterateur_ensemble_est_vide(it);
       it = iterateur_suivant_ensemble(it)){
-    etatsAccLocaux = creer_union_ensemble(etatsAccLocaux,delta1(automate,etat,get_element(it)));
+    ajouter_elements(etatsAccLocaux,delta1(automate,etat,get_element(it)));
   }
   Ensemble * etatsNonTraites = creer_difference_ensemble(etatsAccLocaux,etatsAcc);
-  etatsAcc = creer_union_ensemble(etatsAcc,etatsAccLocaux);
+  ajouter_elements(etatsAcc,etatsAccLocaux);
+  liberer_ensemble(etatsAccLocaux);
   for(it = premier_iterateur_ensemble(etatsNonTraites);
       ! iterateur_ensemble_est_vide(it);
       it = iterateur_suivant_ensemble(it)){
