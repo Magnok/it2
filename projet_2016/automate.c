@@ -604,7 +604,9 @@ Ensemble* accessibles( const Automate * automate ){
  		! iterateur_est_vide(it);
  		it = iterateur_suivant_ensemble(it)
  		){
- 		ret = creer_union_ensemble(ret,etats_accessibles(automate,get_element(it)));
+	  Ensemble * etats_acc = etats_accessibles(automate,get_element(it));
+	  ajouter_elements(ret,etats_acc);
+	  liberer_ensemble(etats_acc);
  }
  return ret;
 }
